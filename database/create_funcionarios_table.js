@@ -14,6 +14,7 @@ con.connect(function (err) {
         idade INT(3),
         email VARCHAR(255) NOT NULL UNIQUE,
         telefone VARCHAR(20),
+        tipo ENUM('janitor' ,'personal_trainer', 'receptionist', 'manager') NOT NULL,
         morada VARCHAR(255),
         codigo_postal VARCHAR(50)
     )`;

@@ -31,15 +31,15 @@ app.get('/clientes/:id', (req, res) => {
         if (results.length > 0) {
             res.json(results[0]);
         } else {
-            res.status(404).send('cliente não encontrado');
+            res.status(404).send('Cliente não encontrado');
         }
     });
 });
 
 app.post('/clientes', (req, res) => {
-    const { nome, idade, morada, codigo_postal, email } = req.body;
-    const sql = 'INSERT INTO clientes (nome, idade, morada, codigo_postal, email) VALUES (?, ?, ?, ?, ?)';
-    db.query(sql, [nome, idade, morada, codigo_postal, email], (err, result) => {
+    const { nome, idade, email, telefone, subscription_tier } = req.body;
+    const sql = 'INSERT INTO clientes (nome, idade, email, telefone, subscription_tier) VALUES (?, ?, ?, ?, ?)';
+    db.query(sql, [nome, idade, email, telefone, subscription_tier, id], (err, result) => {
         if (err) return res.status(500).send(err);
         res.status(201).json({ id: result.insertId, ...req.body });
     });
@@ -47,14 +47,14 @@ app.post('/clientes', (req, res) => {
 
 app.put('/clientes/:id', (req, res) => {
     const id = req.params.id;
-    const { nome, idade, morada, codigo_postal, email } = req.body;
-    const sql = 'UPDATE clientes SET nome = ?, idade = ?, morada = ?, codigo_postal = ?, email = ? WHERE id = ?';
-    db.query(sql, [nome, idade, morada, codigo_postal, email, id], (err, result) => {
+    const { nome, idade, email, telefone, subscription_tier } = req.body;
+    const sql = 'UPDATE clientes SET nome = ?, idade = ?, email = ?, telefone = ?, subscription_tier = ? WHERE id = ?';
+    db.query(sql, [nome, idade, email, telefone, subscription_tier, id], (err, result) => {
         if (err) return res.status(500).send(err);
         if (result.affectedRows > 0) {
-            res.json({ message: 'cliente atualizado com sucesso' });
+            res.json({ message: 'Cliente atualizado com sucesso' });
         } else {
-            res.status(404).send('cliente não encontrado');
+            res.status(404).send('Cliente não encontrado');
         }
     });
 });
@@ -64,9 +64,9 @@ app.delete('/clientes/:id', (req, res) => {
     db.query('DELETE FROM clientes WHERE id = ?', [id], (err, result) => {
         if (err) return res.status(500).send(err);
         if (result.affectedRows > 0) {
-            res.json({ message: 'cliente deletado com sucesso' });
+            res.json({ message: 'Cliente apagado com sucesso' });
         } else {
-            res.status(404).send('cliente não encontrado');
+            res.status(404).send('Cliente não encontrado');
         }
     });
 });
@@ -76,7 +76,7 @@ app.get('/funcionarios', (req, res) => {
     db.query('SELECT * FROM funcionarios', (err, results) => {
         if (err) { throw err; }
         res.render('funcionarios',
-            { title: 'funcionarios', funcionarios: results });
+            { title: 'Funcionarios', funcionarios: results });
     });
 });
 
@@ -87,15 +87,15 @@ app.get('/funcionarios/:id', (req, res) => {
         if (results.length > 0) {
             res.json(results[0]);
         } else {
-            res.status(404).send('funcionario não encontrado');
+            res.status(404).send('Funcionario não encontrado');
         }
     });
 });
 
 app.post('/funcionarios', (req, res) => {
-    const { nome, idade, disciplina, morada, codigo_postal } = req.body;
-    const sql = 'INSERT INTO funcionarios (nome, idade, disciplina, morada, codigo_postal) VALUES (?, ?, ?, ?, ?)';
-    db.query(sql, [nome, idade, disciplina, morada, codigo_postal], (err, result) => {
+    const { nome, idade, email, telefone, tipo, morada, codigo_postal } = req.body;
+    const sql = 'INSERT INTO funcionarios (nome, idade, email, telefone, tipo, morada, codigo_postal) VALUES (?, ?, ?, ?, ?, ?, ?)';
+    db.query(sql, [nome, idade, email, telefone, tipo, morada, codigo_postal], (err, result) => {
         if (err) return res.status(500).send(err);
         res.status(201).json({ id: result.insertId, ...req.body });
     });
@@ -103,14 +103,14 @@ app.post('/funcionarios', (req, res) => {
 
 app.put('/funcionarios/:id', (req, res) => {
     const id = req.params.id;
-    const { nome, idade, disciplina, morada, codigo_postal } = req.body;
-    const sql = 'UPDATE funcionarios SET nome = ?, idade = ?, disciplina = ?, morada = ?, codigo_postal = ? WHERE id = ?';
-    db.query(sql, [nome, idade, disciplina, morada, codigo_postal, id], (err, result) => {
+    const { nome, idade, email, telefone, tipo, morada, codigo_postal } = req.body;
+    const sql = 'UPDATE funcionarios SET nome = ?, idade = ?, email = ?, telefone = ?, tipo = ?, morada = ?, codigo_postal = ? WHERE id = ?';
+    db.query(sql, [nome, idade, email, telefone, tipo, morada, codigo_postal], (err, result) => {
         if (err) return res.status(500).send(err);
         if (result.affectedRows > 0) {
-            res.json({ message: 'funcionario atualizado com sucesso' });
+            res.json({ message: 'Funcionario atualizado com sucesso' });
         } else {
-            res.status(404).send('funcionario não encontrado');
+            res.status(404).send('Funcionario não encontrado');
         }
     });
 });
@@ -120,9 +120,9 @@ app.delete('/funcionarios/:id', (req, res) => {
     db.query('DELETE FROM funcionarios WHERE id = ?', [id], (err, result) => {
         if (err) return res.status(500).send(err);
         if (result.affectedRows > 0) {
-            res.json({ message: 'funcionario apagado com sucesso' });
+            res.json({ message: 'Funcionario apagado com sucesso' });
         } else {
-            res.status(404).send('funcionario não encontrado');
+            res.status(404).send('Funcionario não encontrado');
         }
     });
 });
@@ -142,37 +142,37 @@ app.get('/ptrainers', (req, res) => {
     db.query(sql, (err, results) => {
         if (err) {
             console.error(err);
-            return res.status(500).json({ error: 'Erro ao buscar clientes' });
+            return res.status(500).json({ error: 'Erro ao procurar clientes' });
         }
         
-        // Format the response to show "Sem orientador" when no advisor is assigned
+        // Format the response to show "Sem ptrainer" when no advisor is assigned
         const formattedResults = results.map(row => ({
             id: row.cliente_id,
             nome: row.cliente_nome,
-            orientador: row.funcionario_nome || "Sem personal trainer",
-            orientador_id: row.funcionario_id || null
+            ptrainer: row.funcionario_nome || "Sem personal trainer",
+            ptrainer_id: row.funcionario_id || null
         }));
         
         res.render('ptrainers',
-            { title: 'clientes e ptrainers', clientes: formattedResults});
+            { title: 'Clientes e ptrainers', clientes: formattedResults});
     });
 });
 
-// Rota para associar/atualizar funcionario orientador (STEP 2)
-app.put('/clientes/:id/orientador', (req, res) => {
+// Rota para associar/atualizar funcionario ptrainer
+app.put('/clientes/:id/ptrainer', (req, res) => {
     const id = req.params.id;
-    const { orientador_id } = req.body;  // Now we only need the advisor ID
+    const { ptrainer_id } = req.body;  // Now we only need the ptrainer ID
     
     // First validate the funcionario exists if provided
-    if (orientador_id) {
-        db.query('SELECT id FROM funcionarios WHERE id = ?', [orientador_id], (err, results) => {
+    if (ptrainer_id) {
+        db.query('SELECT id FROM funcionarios WHERE id = ?', [ptrainer_id], (err, results) => {
             if (err) {
                 console.error(err);
                 return res.status(500).json({ error: 'Erro ao validar funcionario' });
             }
             
             if (results.length === 0) {
-                return res.status(404).json({ error: 'funcionario não encontrado' });
+                return res.status(404).json({ error: 'Funcionario não encontrado' });
             }
             
             updateStudentAdvisor();
@@ -182,21 +182,21 @@ app.put('/clientes/:id/orientador', (req, res) => {
     }
     
     function updateStudentAdvisor() {
-        const sql = 'UPDATE clientes SET orientador_id = ? WHERE id = ?';
-        db.query(sql, [orientador_id || null, id], (err, result) => {
+        const sql = 'UPDATE clientes SET ptrainer_id = ? WHERE id = ?';
+        db.query(sql, [ptrainer_id || null, id], (err, result) => {
             if (err) {
                 console.error(err);
-                return res.status(500).json({ error: 'Erro ao atualizar orientador' });
+                return res.status(500).json({ error: 'Erro ao atualizar personal trainer' });
             }
             
             if (result.affectedRows === 0) {
-                return res.status(404).json({ error: 'cliente não encontrado' });
+                return res.status(404).json({ error: 'Cliente não encontrado' });
             }
             
             res.json({ 
-                message: 'Orientador atualizado com sucesso',
+                message: 'Personal trainer atualizado com sucesso',
                 cliente_id: id,
-                orientador_id: orientador_id || null
+                ptrainer_id: ptrainer_id || null
             });
         });
     }

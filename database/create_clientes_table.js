@@ -16,8 +16,7 @@ con.connect(function (err) {
         telefone VARCHAR(20),
         subscription_tier ENUM('basic', 'premium', 'vip') NOT NULL DEFAULT 'basic',
         ptrainer_id INT,
-        FOREIGN KEY (ptrainer_id) REFERENCES funcionarios(id) ON DELETE SET NULL,
-        data_registo TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        FOREIGN KEY (ptrainer_id) REFERENCES funcionarios(id) ON DELETE SET NULL
     )`;
     
     con.query(sqlcli, function (err, result) {
