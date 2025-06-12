@@ -1,4 +1,4 @@
-var con = require('../connection.js'); //This is the same as making a new connection
+var con = require('../init_connection.js'); //This is the same as making a new connection
 
 con.connect(function (err) {
     if (err) throw err;
