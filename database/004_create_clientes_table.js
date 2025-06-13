@@ -14,8 +14,9 @@ con.connect(function (err) {
         idade INT(3),
         email VARCHAR(255) NOT NULL UNIQUE,
         telefone VARCHAR(20),
-        subscription_tier ENUM('basic', 'premium', 'vip') NOT NULL DEFAULT 'basic',
+        subscription_tier_id INT NOT NULL DEFAULT 1,  -- default to basic
         ptrainer_id INT,
+        FOREIGN KEY (subscription_tier_id) REFERENCES subscription_tiers(id),
         FOREIGN KEY (ptrainer_id) REFERENCES funcionarios(id) ON DELETE SET NULL
     )`;
     
@@ -25,6 +26,6 @@ con.connect(function (err) {
             throw err;
         }
         console.log("Clientes table created successfully!");
-        con.end(); // Close the connection
+        con.end();
     });
 });
