@@ -1,0 +1,52 @@
+html
+  head
+    title= title
+    link(href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet")
+    style.
+      body {
+        padding: 20px;
+        background-color: #f8f9fa;
+      }
+      .table-container {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+      }
+      h1 {
+        margin-bottom: 20px;
+        color: #343a40;
+      }
+
+  body
+    div.container
+      h1.display-4= title
+
+      div.table-container
+        table.table.table-striped.table-hover
+          thead.table-dark
+            tr
+              th ID
+              th Nome
+              th Idade
+              th Email
+              th Telefone
+              th Função
+              th Morada
+              th Código Postal
+          tbody
+            each funcionario in funcionarios
+              tr
+                td= funcionario.id
+                td= funcionario.nome
+                td= funcionario.idade
+                td= funcionario.email
+                td= funcionario.telefone
+                td= funcionario.tipo
+                td= funcionario.morada
+                td= funcionario.codigo_postal
+
+      a.btn.btn-primary(href="/") Voltar à Página Inicial
+
+    script(src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js")
