@@ -2,6 +2,7 @@ html
   head
     title= title
     link(href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet")
+    link(href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet")
     style.
       body {
         padding: 20px;
@@ -12,6 +13,7 @@ html
         padding: 20px;
         border-radius: 8px;
         box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
       }
       h1 {
         margin-bottom: 20px;
@@ -20,27 +22,204 @@ html
       .action-btns {
         white-space: nowrap;
       }
+      .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+      }
 
   body
     div.container
-      h1= title
+      h1.display-4= title
 
       div.table-container
+        div.d-flex.justify-content-between.mb-3
+          a.btn.btn-primary(href="/") 
+            i.bi.bi-arrow-left
+            |  Voltar à Página Inicial
+          a.btn.btn-success(href="/clientes")
+            i.bi.bi-people-fill
+            |  Ver Todos Clientes
+
         table.table.table-striped.table-hover
           thead.table-dark
             tr
               th ID
               th Nome
               th Personal Trainer
+              th Ações
           tbody
             each cliente in clientes
               tr
                 td= cliente.id
                 td= cliente.nome
                 td= cliente.ptrainer || 'Sem personal trainer'
+                td.action-btns
+                  button.btn.btn-sm.btn-warning.me-1(type="button" data-bs-toggle="modal" data-bs-target=`#editModal${cliente.id}`)
+                    i.bi.bi-pencil
+                  button.btn.btn-sm.btn-info.me-1(type="button" data-bs-toggle="modal" data-bs-target=`#assignModal${cliente.id}`)
+                    i.bi.bi-person-plus
+                  button.btn.btn-sm.btn-danger(type="button" data-bs-toggle="modal" data-bs-target=`#deleteModal${cliente.id}`)
+                    i.bi.bi-trash
 
+    // Assign Personal Trainer Modal for each client
+    each cliente in clientes
+      div.modal.fade(id=`assignModal${cliente.id}` tabindex="-1" aria-hidden="true")
+        div.modal-dialog
+          div.modal-content
+            div.modal-header
+              h5.modal-title Atribuir Personal Trainer
+              button.btn-close(type="button" data-bs-dismiss="modal" aria-label="Close")
+            div.modal-body
+              form(id=`assignForm${cliente.id}`)
+                div.mb-3
+                  label.form-label(for=`assignPTrainer${cliente.id}`) Selecionar Personal Trainer
+                  select.form-select(id=`assignPTrainer${cliente.id}` name="ptrainer_id")
+                    option(value="") Sem personal trainer
+                    if funcionarios && funcionarios.length
+                      each funcionario in funcionarios
+                        option(value=funcionario.id selected=cliente.ptrainer_id===funcionario.id)= funcionario.nome
+                    else
+                      option(value="" disabled) Nenhum funcionário disponível
+            div.modal-footer
+              button.btn.btn-secondary(type="button" data-bs-dismiss="modal") Cancelar
+              button.btn.btn-primary(type="button" id=`submitAssignForm${cliente.id}`) Guardar
+              
+    // Edit and Delete Modals for each client
+    each cliente in clientes
+      // Edit Modal
+      div.modal.fade(id=`editModal${cliente.id}` tabindex="-1" aria-hidden="true")
+        div.modal-dialog
+          div.modal-content
+            div.modal-header
+              h5.modal-title Editar Cliente #{cliente.nome}
+              button.btn-close(type="button" data-bs-dismiss="modal" aria-label="Close")
+            div.modal-body
+              form(id=`editForm${cliente.id}`)
+                input(type="hidden" name="_method" value="PUT")
+                div.mb-3
+                  label.form-label(for=`editNome${cliente.id}`) Nome
+                  input.form-control(type="text" id=`editNome${cliente.id}` name="nome" value=cliente.nome required)
+                div.mb-3
+                  label.form-label(for=`editEmail${cliente.id}`) Email
+                  input.form-control(type="email" id=`editEmail${cliente.id}` name="email" value=cliente.email required)
+            div.modal-footer
+              button.btn.btn-secondary(type="button" data-bs-dismiss="modal") Cancelar
+              button.btn.btn-primary(type="button" id=`submitEditForm${cliente.id}`) Atualizar
 
-      br
-      a.btn.btn-secondary(href="/") Voltar à Página Inicial
+      // Delete Modal
+      div.modal.fade(id=`deleteModal${cliente.id}` tabindex="-1" aria-hidden="true")
+        div.modal-dialog
+          div.modal-content
+            div.modal-header
+              h5.modal-title Confirmar Eliminação
+              button.btn-close(type="button" data-bs-dismiss="modal" aria-label="Close")
+            div.modal-body
+              p Tem a certeza que deseja eliminar o cliente #{cliente.nome}?
+              form(id=`deleteForm${cliente.id}`)
+                input(type="hidden" name="_method" value="DELETE")
+            div.modal-footer
+              button.btn.btn-secondary(type="button" data-bs-dismiss="modal") Cancelar
+              button.btn.btn-danger(type="button" id=`submitDeleteForm${cliente.id}`) Eliminar
 
     script(src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js")
+    script.
+      document.addEventListener('DOMContentLoaded', function() {
+        // Handle assign personal trainer forms
+        document.querySelectorAll('[id^="assignForm"]').forEach(form => {
+          const id = form.id.replace('assignForm', '');
+          const submitBtn = document.getElementById(`submitAssignForm${id}`);
+          
+          if (submitBtn) {
+            submitBtn.addEventListener('click', function() {
+              const ptrainerId = document.getElementById(`assignPTrainer${id}`).value;
+              const formData = {
+                ptrainer_id: ptrainerId || null
+              };
+
+              fetch(`/clientes/${id}/ptrainer`, {
+                method: 'PUT',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
+              })
+              .then(response => {
+                if (response.ok) {
+                  bootstrap.Modal.getInstance(document.getElementById(`assignModal${id}`)).hide();
+                  location.reload();
+                } else {
+                  throw new Error('Assignment failed');
+                }
+              })
+              .catch(error => {
+                console.error('Error:', error);
+                alert('Falha ao atribuir personal trainer');
+              });
+            });
+          }
+        });
+
+        // Handle edit forms
+        document.querySelectorAll('[id^="editForm"]').forEach(form => {
+          const id = form.id.replace('editForm', '');
+          const submitBtn = document.getElementById(`submitEditForm${id}`);
+          
+          if (submitBtn) {
+            submitBtn.addEventListener('click', function() {
+              const formData = {
+                nome: document.getElementById(`editNome${id}`).value,
+                email: document.getElementById(`editEmail${id}`).value
+              };
+
+              fetch(`/clientes/${id}`, {
+                method: 'PUT',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
+              })
+              .then(response => {
+                if (response.ok) {
+                  bootstrap.Modal.getInstance(document.getElementById(`editModal${id}`)).hide();
+                  location.reload();
+                } else {
+                  throw new Error('Update failed');
+                }
+              })
+              .catch(error => {
+                console.error('Error:', error);
+                alert('Falha ao atualizar cliente');
+              });
+            });
+          }
+        });
+
+        // Handle delete forms
+        document.querySelectorAll('[id^="deleteForm"]').forEach(form => {
+          const id = form.id.replace('deleteForm', '');
+          const submitBtn = document.getElementById(`submitDeleteForm${id}`);
+          
+          if (submitBtn) {
+            submitBtn.addEventListener('click', function() {
+              fetch(`/clientes/${id}`, {
+                method: 'DELETE',
+                headers: {
+                  'Content-Type': 'application/json',
+                }
+              })
+              .then(response => {
+                if (response.ok) {
+                  bootstrap.Modal.getInstance(document.getElementById(`deleteModal${id}`)).hide();
+                  location.reload();
+                } else {
+                  throw new Error('Delete failed');
+                }
+              })
+              .catch(error => {
+                console.error('Error:', error);
+                alert('Falha ao eliminar cliente');
+              });
+            });
+          }
+        });
+      });

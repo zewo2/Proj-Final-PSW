@@ -2,6 +2,7 @@ html
   head
     title= title
     link(href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet")
+    link(href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet")
     style.
       body {
         padding: 20px;
@@ -18,12 +19,27 @@ html
         margin-bottom: 20px;
         color: #343a40;
       }
+      .action-buttons {
+        white-space: nowrap;
+      }
+      .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+      }
 
   body
     div.container
       h1.display-4= title
 
       div.table-container
+        div.d-flex.justify-content-between.mb-3
+          a.btn.btn-primary(href="/") 
+            i.bi.bi-arrow-left
+            |  Voltar à Página Inicial
+          button.btn.btn-success(type="button" data-bs-toggle="modal" data-bs-target="#createModal")
+            i.bi.bi-plus-lg
+            |  Adicionar Funcionário
+
         table.table.table-striped.table-hover
           thead.table-dark
             tr
@@ -35,6 +51,7 @@ html
               th Função
               th Morada
               th Código Postal
+              th Ações
           tbody
             each funcionario in funcionarios
               tr
@@ -46,7 +63,203 @@ html
                 td= funcionario.tipo
                 td= funcionario.morada
                 td= funcionario.codigo_postal
+                td.action-buttons
+                  button.btn.btn-sm.btn-warning.me-1(type="button" data-bs-toggle="modal" data-bs-target=`#editModal${funcionario.id}`)
+                    i.bi.bi-pencil
+                  button.btn.btn-sm.btn-danger(type="button" data-bs-toggle="modal" data-bs-target=`#deleteModal${funcionario.id}`)
+                    i.bi.bi-trash
 
-      a.btn.btn-primary(href="/") Voltar à Página Inicial
+    // Create Funcionário Modal
+    div.modal.fade(id="createModal" tabindex="-1" aria-hidden="true")
+      div.modal-dialog
+        div.modal-content
+          div.modal-header
+            h5.modal-title Adicionar Novo Funcionário
+            button.btn-close(type="button" data-bs-dismiss="modal" aria-label="Close")
+          div.modal-body
+            form#createForm
+              div.mb-3
+                label.form-label(for="nome") Nome
+                input.form-control(type="text" id="nome" name="nome" required)
+              div.mb-3
+                label.form-label(for="idade") Idade
+                input.form-control(type="number" id="idade" name="idade")
+              div.mb-3
+                label.form-label(for="email") Email
+                input.form-control(type="email" id="email" name="email" required)
+              div.mb-3
+                label.form-label(for="telefone") Telefone
+                input.form-control(type="text" id="telefone" name="telefone")
+              div.mb-3
+                label.form-label(for="tipo") Função
+                input.form-control(type="text" id="tipo" name="tipo" required)
+              div.mb-3
+                label.form-label(for="morada") Morada
+                input.form-control(type="text" id="morada" name="morada")
+              div.mb-3
+                label.form-label(for="codigo_postal") Código Postal
+                input.form-control(type="text" id="codigo_postal" name="codigo_postal")
+          div.modal-footer
+            button.btn.btn-secondary(type="button" data-bs-dismiss="modal") Cancelar
+            button.btn.btn-primary(type="button" id="submitCreateForm") Guardar
+
+    // Edit and Delete Modals for each funcionario
+    each funcionario in funcionarios
+      // Edit Modal
+      div.modal.fade(id=`editModal${funcionario.id}` tabindex="-1" aria-hidden="true")
+        div.modal-dialog
+          div.modal-content
+            div.modal-header
+              h5.modal-title Editar Funcionário #{funcionario.nome}
+              button.btn-close(type="button" data-bs-dismiss="modal" aria-label="Close")
+            div.modal-body
+              form(id=`editForm${funcionario.id}`)
+                input(type="hidden" name="_method" value="PUT")
+                div.mb-3
+                  label.form-label(for=`editNome${funcionario.id}`) Nome
+                  input.form-control(type="text" id=`editNome${funcionario.id}` name="nome" value=funcionario.nome required)
+                div.mb-3
+                  label.form-label(for=`editIdade${funcionario.id}`) Idade
+                  input.form-control(type="number" id=`editIdade${funcionario.id}` name="idade" value=funcionario.idade)
+                div.mb-3
+                  label.form-label(for=`editEmail${funcionario.id}`) Email
+                  input.form-control(type="email" id=`editEmail${funcionario.id}` name="email" value=funcionario.email required)
+                div.mb-3
+                  label.form-label(for=`editTelefone${funcionario.id}`) Telefone
+                  input.form-control(type="text" id=`editTelefone${funcionario.id}` name="telefone" value=funcionario.telefone)
+                div.mb-3
+                  label.form-label(for=`editTipo${funcionario.id}`) Função
+                  input.form-control(type="text" id=`editTipo${funcionario.id}` name="tipo" value=funcionario.tipo required)
+                div.mb-3
+                  label.form-label(for=`editMorada${funcionario.id}`) Morada
+                  input.form-control(type="text" id=`editMorada${funcionario.id}` name="morada" value=funcionario.morada)
+                div.mb-3
+                  label.form-label(for=`editCodigoPostal${funcionario.id}`) Código Postal
+                  input.form-control(type="text" id=`editCodigoPostal${funcionario.id}` name="codigo_postal" value=funcionario.codigo_postal)
+            div.modal-footer
+              button.btn.btn-secondary(type="button" data-bs-dismiss="modal") Cancelar
+              button.btn.btn-primary(type="button" id=`submitEditForm${funcionario.id}`) Atualizar
+
+      // Delete Modal
+      div.modal.fade(id=`deleteModal${funcionario.id}` tabindex="-1" aria-hidden="true")
+        div.modal-dialog
+          div.modal-content
+            div.modal-header
+              h5.modal-title Confirmar Eliminação
+              button.btn-close(type="button" data-bs-dismiss="modal" aria-label="Close")
+            div.modal-body
+              p Tem a certeza que deseja eliminar o funcionário #{funcionario.nome}?
+              form(id=`deleteForm${funcionario.id}`)
+                input(type="hidden" name="_method" value="DELETE")
+            div.modal-footer
+              button.btn.btn-secondary(type="button" data-bs-dismiss="modal") Cancelar
+              button.btn.btn-danger(type="button" id=`submitDeleteForm${funcionario.id}`) Eliminar
 
     script(src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js")
+    script.
+      document.addEventListener('DOMContentLoaded', function() {
+        // Handle create form submission
+        const submitCreateBtn = document.getElementById('submitCreateForm');
+        if (submitCreateBtn) {
+          submitCreateBtn.addEventListener('click', function() {
+            const formData = {
+              nome: document.getElementById('nome').value,
+              idade: document.getElementById('idade').value,
+              email: document.getElementById('email').value,
+              telefone: document.getElementById('telefone').value,
+              tipo: document.getElementById('tipo').value,
+              morada: document.getElementById('morada').value,
+              codigo_postal: document.getElementById('codigo_postal').value
+            };
+
+            fetch('/funcionarios', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(formData)
+            })
+            .then(response => {
+              if (response.ok) {
+                bootstrap.Modal.getInstance(document.getElementById('createModal')).hide();
+                location.reload();
+              } else {
+                throw new Error('Create failed');
+              }
+            })
+            .catch(error => {
+              console.error('Error:', error);
+              alert('Falha ao criar funcionário');
+            });
+          });
+        }
+
+        // Handle edit forms
+        document.querySelectorAll('[id^="editForm"]').forEach(form => {
+          const id = form.id.replace('editForm', '');
+          const submitBtn = document.getElementById(`submitEditForm${id}`);
+          
+          if (submitBtn) {
+            submitBtn.addEventListener('click', function() {
+              const formData = {
+                nome: document.getElementById(`editNome${id}`).value,
+                idade: document.getElementById(`editIdade${id}`).value,
+                email: document.getElementById(`editEmail${id}`).value,
+                telefone: document.getElementById(`editTelefone${id}`).value,
+                tipo: document.getElementById(`editTipo${id}`).value,
+                morada: document.getElementById(`editMorada${id}`).value,
+                codigo_postal: document.getElementById(`editCodigoPostal${id}`).value
+              };
+
+              fetch(`/funcionarios/${id}`, {
+                method: 'PUT',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
+              })
+              .then(response => {
+                if (response.ok) {
+                  bootstrap.Modal.getInstance(document.getElementById(`editModal${id}`)).hide();
+                  location.reload();
+                } else {
+                  throw new Error('Update failed');
+                }
+              })
+              .catch(error => {
+                console.error('Error:', error);
+                alert('Falha ao atualizar funcionário');
+              });
+            });
+          }
+        });
+
+        // Handle delete forms
+        document.querySelectorAll('[id^="deleteForm"]').forEach(form => {
+          const id = form.id.replace('deleteForm', '');
+          const submitBtn = document.getElementById(`submitDeleteForm${id}`);
+          
+          if (submitBtn) {
+            submitBtn.addEventListener('click', function() {
+              fetch(`/funcionarios/${id}`, {
+                method: 'DELETE',
+                headers: {
+                  'Content-Type': 'application/json',
+                }
+              })
+              .then(response => {
+                if (response.ok) {
+                  bootstrap.Modal.getInstance(document.getElementById(`deleteModal${id}`)).hide();
+                  location.reload();
+                } else {
+                  throw new Error('Delete failed');
+                }
+              })
+              .catch(error => {
+                console.error('Error:', error);
+                alert('Falha ao eliminar funcionário');
+              });
+            });
+          }
+        });
+      });

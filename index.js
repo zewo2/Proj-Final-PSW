@@ -5,6 +5,10 @@ const mysql = require('mysql2');
 const app = express();
 const port = 3000;
 const db = require('./connection.js'); //This is the same as making a new connection
+const bodyParser = require('body-parser');
+
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 
 // Middleware to parse JSON bodies
 app.use(express.json());
@@ -48,52 +52,48 @@ app.get('/clientes/:id', (req, res) => {
 
 app.post('/clientes', (req, res) => {
     const { nome, idade, email, telefone, subscription_tier_id } = req.body;
+    if (!nome || !email || !subscription_tier_id) {
+        return res.status(400).json({ error: 'Missing required fields' });
+    }
+    
     const sql = 'INSERT INTO clientes (nome, idade, email, telefone, subscription_tier_id) VALUES (?, ?, ?, ?, ?)';
-    db.query(sql, [nome, idade, email, telefone, subscription_tier_id], (err, result) => {
-        if (err) return res.status(500).send(err);
+    db.query(sql, [nome, idade || null, email, telefone || null, subscription_tier_id], (err, result) => {
+        if (err) return res.status(500).json({ error: err.message });
         res.status(201).json({ id: result.insertId, ...req.body });
     });
 });
 
 app.put('/clientes/:id', (req, res) => {
-    const id = req.params.id;
+    const { id } = req.params;
     const { nome, idade, email, telefone, subscription_tier_id } = req.body;
     
-    // Validate subscription tier exists if provided
-    if (subscription_tier_id) {
-        db.query('SELECT id FROM subscription_tiers WHERE id = ?', [subscription_tier_id], (err, results) => {
-            if (err) return res.status(500).send(err);
-            if (results.length === 0) {
-                return res.status(400).json({ error: 'Invalid subscription tier ID' });
-            }
-            updateCliente();
-        });
-    } else {
-        updateCliente();
-    }
-
-    function updateCliente() {
-        const sql = 'UPDATE clientes SET nome = ?, idade = ?, email = ?, telefone = ?, subscription_tier_id = ? WHERE id = ?';
-        db.query(sql, [nome, idade, email, telefone, subscription_tier_id, id], (err, result) => {
-            if (err) return res.status(500).send(err);
-            if (result.affectedRows > 0) {
-                res.json({ message: 'Cliente atualizado com sucesso' });
-            } else {
-                res.status(404).send('Cliente não encontrado');
-            }
-        });
-    }
+    const sql = `
+      UPDATE clientes 
+      SET nome = ?, idade = ?, email = ?, telefone = ?, subscription_tier_id = ?
+      WHERE id = ?
+    `;
+    
+    db.query(sql, 
+      [nome, idade, email, telefone, subscription_tier_id, id], 
+      (err, result) => {
+        if (err) return res.status(500).json({ error: err.message });
+        if (result.affectedRows === 0) {
+          return res.status(404).json({ error: 'Client not found' });
+        }
+        res.status(200).json({ message: 'Client updated successfully' });
+    });
 });
 
 app.delete('/clientes/:id', (req, res) => {
-    const id = req.params.id;
-    db.query('DELETE FROM clientes WHERE id = ?', [id], (err, result) => {
-        if (err) return res.status(500).send(err);
-        if (result.affectedRows > 0) {
-            res.json({ message: 'Cliente apagado com sucesso' });
-        } else {
-            res.status(404).send('Cliente não encontrado');
+    const { id } = req.params;
+    const sql = 'DELETE FROM clientes WHERE id = ?';
+    
+    db.query(sql, [id], (err, result) => {
+        if (err) return res.status(500).json({ error: err.message });
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'Client not found' });
         }
+        res.status(200).json({ message: 'Client deleted successfully' });
     });
 });
 
@@ -217,27 +217,40 @@ app.get('/ptrainers', (req, res) => {
             a.id as cliente_id,
             a.nome as cliente_nome,
             p.id as funcionario_id,
-            p.nome as funcionario_nome
+            p.nome as funcionario_nome,
+            a.ptrainer_id
         FROM clientes a
         LEFT JOIN funcionarios p ON a.ptrainer_id = p.id
     `;
     
-    db.query(sql, (err, results) => {
+    // First get the clientes with their ptrainers
+    db.query(sql, (err, clientResults) => {
         if (err) {
             console.error(err);
             return res.status(500).json({ error: 'Erro ao procurar clientes' });
         }
         
-        // Format the response to show "Sem ptrainer" when no advisor is assigned
-        const formattedResults = results.map(row => ({
-            id: row.cliente_id,
-            nome: row.cliente_nome,
-            ptrainer: row.funcionario_nome || "Sem personal trainer",
-            ptrainer_id: row.funcionario_id || null
-        }));
-        
-        res.render('ptrainers',
-            { title: 'Clientes e ptrainers', clientes: formattedResults});
+        // Then get all funcionarios for the dropdown
+        db.query('SELECT id, nome FROM funcionarios', (err, funcionarioResults) => {
+            if (err) {
+                console.error(err);
+                return res.status(500).json({ error: 'Erro ao procurar funcionarios' });
+            }
+            
+            // Format the clientes data
+            const formattedClientes = clientResults.map(row => ({
+                id: row.cliente_id,
+                nome: row.cliente_nome,
+                ptrainer: row.funcionario_nome || "Sem personal trainer",
+                ptrainer_id: row.funcionario_id || null
+            }));
+            
+            res.render('ptrainers', {
+                title: 'Clientes e Personal Trainers',
+                clientes: formattedClientes,
+                funcionarios: funcionarioResults  // Pass funcionarios to the template
+            });
+        });
     });
 });
 
