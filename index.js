@@ -17,10 +17,20 @@ app.get('/', function (req, res) {
 });
 
 app.get('/clientes', (req, res) => {
-    db.query('SELECT * FROM clientes', (err, results) => {
+    const sql = `
+        SELECT 
+            c.id, c.nome, c.idade, c.email, c.telefone, 
+            c.subscription_tier_id, c.ptrainer_id,
+            s.name AS subscription_tier_name
+        FROM clientes c
+        LEFT JOIN subscription_tiers s ON c.subscription_tier_id = s.id
+    `;
+    db.query(sql, (err, results) => {
         if (err) { throw err; }
-        res.render('clientes',
-            { title: 'clientes', clientes: results });
+        res.render('clientes', { 
+            title: 'Clientes', 
+            clientes: results 
+        });
     });
 });
 
@@ -37,9 +47,9 @@ app.get('/clientes/:id', (req, res) => {
 });
 
 app.post('/clientes', (req, res) => {
-    const { nome, idade, email, telefone, subscription_tier } = req.body;
-    const sql = 'INSERT INTO clientes (nome, idade, email, telefone, subscription_tier) VALUES (?, ?, ?, ?, ?)';
-    db.query(sql, [nome, idade, email, telefone, subscription_tier, id], (err, result) => {
+    const { nome, idade, email, telefone, subscription_tier_id } = req.body;
+    const sql = 'INSERT INTO clientes (nome, idade, email, telefone, subscription_tier_id) VALUES (?, ?, ?, ?, ?)';
+    db.query(sql, [nome, idade, email, telefone, subscription_tier_id], (err, result) => {
         if (err) return res.status(500).send(err);
         res.status(201).json({ id: result.insertId, ...req.body });
     });
@@ -47,16 +57,32 @@ app.post('/clientes', (req, res) => {
 
 app.put('/clientes/:id', (req, res) => {
     const id = req.params.id;
-    const { nome, idade, email, telefone, subscription_tier } = req.body;
-    const sql = 'UPDATE clientes SET nome = ?, idade = ?, email = ?, telefone = ?, subscription_tier = ? WHERE id = ?';
-    db.query(sql, [nome, idade, email, telefone, subscription_tier, id], (err, result) => {
-        if (err) return res.status(500).send(err);
-        if (result.affectedRows > 0) {
-            res.json({ message: 'Cliente atualizado com sucesso' });
-        } else {
-            res.status(404).send('Cliente não encontrado');
-        }
-    });
+    const { nome, idade, email, telefone, subscription_tier_id } = req.body;
+    
+    // Validate subscription tier exists if provided
+    if (subscription_tier_id) {
+        db.query('SELECT id FROM subscription_tiers WHERE id = ?', [subscription_tier_id], (err, results) => {
+            if (err) return res.status(500).send(err);
+            if (results.length === 0) {
+                return res.status(400).json({ error: 'Invalid subscription tier ID' });
+            }
+            updateCliente();
+        });
+    } else {
+        updateCliente();
+    }
+
+    function updateCliente() {
+        const sql = 'UPDATE clientes SET nome = ?, idade = ?, email = ?, telefone = ?, subscription_tier_id = ? WHERE id = ?';
+        db.query(sql, [nome, idade, email, telefone, subscription_tier_id, id], (err, result) => {
+            if (err) return res.status(500).send(err);
+            if (result.affectedRows > 0) {
+                res.json({ message: 'Cliente atualizado com sucesso' });
+            } else {
+                res.status(404).send('Cliente não encontrado');
+            }
+        });
+    }
 });
 
 app.delete('/clientes/:id', (req, res) => {
@@ -105,7 +131,7 @@ app.put('/funcionarios/:id', (req, res) => {
     const id = req.params.id;
     const { nome, idade, email, telefone, tipo, morada, codigo_postal } = req.body;
     const sql = 'UPDATE funcionarios SET nome = ?, idade = ?, email = ?, telefone = ?, tipo = ?, morada = ?, codigo_postal = ? WHERE id = ?';
-    db.query(sql, [nome, idade, email, telefone, tipo, morada, codigo_postal], (err, result) => {
+    db.query(sql, [nome, idade, email, telefone, tipo, morada, codigo_postal, id], (err, result) => {
         if (err) return res.status(500).send(err);
         if (result.affectedRows > 0) {
             res.json({ message: 'Funcionario atualizado com sucesso' });
@@ -123,6 +149,63 @@ app.delete('/funcionarios/:id', (req, res) => {
             res.json({ message: 'Funcionario apagado com sucesso' });
         } else {
             res.status(404).send('Funcionario não encontrado');
+        }
+    });
+});
+
+app.get('/subscricoes', (req, res) => {
+    db.query('SELECT * FROM subscription_tiers', (err, results) => { // Fixed table name
+        if (err) { throw err; }
+        res.render('subscriptions', { 
+            title: 'Subscrições', 
+            subscription_tiers: results 
+        });
+    });
+});
+
+app.get('/subscricoes/:id', (req, res) => {
+    const id = req.params.id;
+    db.query('SELECT * FROM subscription_tiers WHERE id = ?', [id], (err, results) => {
+        if (err) { throw err; }
+        if (results.length > 0) {
+            res.json(results[0]);
+        } else {
+            res.status(404).send('Tipo de subscrição não encontrada');
+        }
+    });
+});
+
+app.post('/subscricoes', (req, res) => {
+    const { name, description, monthly_price, features } = req.body;
+    const sql = 'INSERT INTO subscription_tiers (name, description, monthly_price, features) VALUES (?, ?, ?, ?)';
+    db.query(sql, [name, description, monthly_price, features], (err, result) => {
+        if (err) return res.status(500).send(err);
+        res.status(201).json({ id: result.insertId, ...req.body });
+    });
+});
+
+app.put('/subscricoes/:id', (req, res) => {
+    const id = req.params.id;
+    const { name, description, monthly_price, features } = req.body;
+    const sql = 'UPDATE subscription_tiers SET name = ?, description = ?, monthly_price = ?, features = ? WHERE id = ?';
+    db.query(sql, [name, description, monthly_price, features, id], (err, result) => {
+        if (err) return res.status(500).send(err);
+        if (result.affectedRows > 0) {
+            res.json({ message: 'Tipo de subscrição atualizada com sucesso' });
+        } else {
+            res.status(404).send('Tipo de subscrição não encontrada');
+        }
+    });
+});
+
+app.delete('/subscricoes/:id', (req, res) => {
+    const id = req.params.id;
+    db.query('DELETE FROM subscription_tiers WHERE id = ?', [id], (err, result) => {
+        if (err) return res.status(500).send(err);
+        if (result.affectedRows > 0) {
+            res.json({ message: 'Tipo de subscrição apagada com sucesso' });
+        } else {
+            res.status(404).send('Tipo de subscrição não encontrada');
         }
     });
 });
@@ -175,13 +258,13 @@ app.put('/clientes/:id/ptrainer', (req, res) => {
                 return res.status(404).json({ error: 'Funcionario não encontrado' });
             }
             
-            updateStudentAdvisor();
+            updatePTrainer();
         });
     } else {
-        updateStudentAdvisor();
+        updatePTrainer();
     }
     
-    function updateStudentAdvisor() {
+    function updatePTrainer() {
         const sql = 'UPDATE clientes SET ptrainer_id = ? WHERE id = ?';
         db.query(sql, [ptrainer_id || null, id], (err, result) => {
             if (err) {

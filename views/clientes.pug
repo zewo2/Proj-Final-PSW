@@ -41,7 +41,15 @@ html
                 td= cliente.idade
                 td= cliente.email
                 td= cliente.telefone
-                td= cliente.subscription_tier
+                td
+                  if cliente.subscription_tier_id === 1
+                    span.badge.rounded-pill.text-bg-secondary Basic
+                  else if cliente.subscription_tier_id === 2
+                    span.badge.rounded-pill.text-bg-primary Premium
+                  else if cliente.subscription_tier_id === 3
+                    span.badge.rounded-pill.text-bg-success VIP
+                  else
+                    span.badge.rounded-pill.text-bg-warning Desconhecido
 
       a.btn.btn-primary(href="/") Voltar à Página Inicial
 
