@@ -154,7 +154,7 @@ app.delete('/funcionarios/:id', (req, res) => {
 });
 
 app.get('/subscricoes', (req, res) => {
-    db.query('SELECT * FROM subscription_tiers', (err, results) => { // Fixed table name
+    db.query('SELECT * FROM subscription_tiers', (err, results) => {
         if (err) { throw err; }
         res.render('subscriptions', { 
             title: 'Subscrições', 
@@ -210,31 +210,30 @@ app.delete('/subscricoes/:id', (req, res) => {
     });
 });
 
-// Rota para listar clientes com seus funcionarios ptrainers (STEP 3)
 app.get('/ptrainers', (req, res) => {
     const sql = `
         SELECT 
-            a.id as cliente_id,
-            a.nome as cliente_nome,
-            p.id as funcionario_id,
-            p.nome as funcionario_nome,
-            a.ptrainer_id
-        FROM clientes a
-        LEFT JOIN funcionarios p ON a.ptrainer_id = p.id
+            c.id as cliente_id,
+            c.nome as cliente_nome,
+            f.id as funcionario_id,
+            f.nome as funcionario_nome,
+            c.ptrainer_id
+        FROM clientes c
+        LEFT JOIN funcionarios f ON c.ptrainer_id = f.id
     `;
     
-    // First get the clientes with their ptrainers
+    // Get clientes with their ptrainers
     db.query(sql, (err, clientResults) => {
         if (err) {
             console.error(err);
             return res.status(500).json({ error: 'Erro ao procurar clientes' });
         }
         
-        // Then get all funcionarios for the dropdown
-        db.query('SELECT id, nome FROM funcionarios', (err, funcionarioResults) => {
+        // Get only personal trainers for the dropdown
+        db.query("SELECT id, nome FROM funcionarios WHERE tipo = 'personal_trainer'", (err, ptrainerResults) => {
             if (err) {
                 console.error(err);
-                return res.status(500).json({ error: 'Erro ao procurar funcionarios' });
+                return res.status(500).json({ error: 'Erro ao procurar personal trainers' });
             }
             
             // Format the clientes data
@@ -244,11 +243,13 @@ app.get('/ptrainers', (req, res) => {
                 ptrainer: row.funcionario_nome || "Sem personal trainer",
                 ptrainer_id: row.funcionario_id || null
             }));
+
+            // console.log('Personal trainers:', ptrainerResults); // debugging line
             
             res.render('ptrainers', {
-                title: 'Clientes e Personal Trainers',
+                title: 'Personal Trainers',
                 clientes: formattedClientes,
-                funcionarios: funcionarioResults  // Pass funcionarios to the template
+                personal_trainers: ptrainerResults  // Renamed to be more specific
             });
         });
     });

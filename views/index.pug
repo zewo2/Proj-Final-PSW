@@ -1,65 +1,71 @@
-html
-  head
-    title= title
-    link(href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet")
-    style.
-      body {
-        background-color: #f5f5dc; /* Beige background */
-      }
-      .main-container {
-        height: 100vh;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        text-align: center;
-      }
-      .btn-card {
-        background: white;
-        width: 200px;
-        padding: 20px;
-        margin: 10px;
-        border-radius: 10px;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        transition: transform 0.3s;
-      }
-      .btn-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
-      }
-      .btn-icon {
-        font-size: 2rem;
-        margin-bottom: 10px;
-      }
+extends layouts/fe_master
 
-  body
-    div.container.main-container
-      h1.display-4.mb-4 Sistema de Gestão de Ginásio
-      p.lead.mb-5 Escolha uma das opções abaixo:
+block content
+  style.
+    .main-container {
+      height: calc(100vh - 120px);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+    }
+    .btn-card {
+      background: white;
+      width: 200px;
+      padding: 20px;
+      margin: 10px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      transition: transform 0.3s;
+      border: 1px solid rgba(0,0,0,0.1);
+    }
+    .btn-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+    }
+    .btn-icon {
+      font-size: 2rem;
+      margin-bottom: 10px;
+      color: #0d6efd;
+    }
+    .card-title {
+      color: #343a40;
+      font-weight: 600;
+    }
 
-      div.d-flex.flex-wrap.justify-content-center
-        a(href="/funcionarios" style="text-decoration: none").text-dark
-          div.btn-card
-            div.btn-icon 👩‍🏫
-            h5 Funcionários
-            p.small.text-muted Gerir os funcionários do ginásio
+  div.container.main-container
+    h1.display-4.mb-4 Sistema de Gestão de Ginásio
+    p.lead.mb-5 Escolha uma das opções abaixo:
 
-        a(href="/clientes" style="text-decoration: none").text-dark
-          div.btn-card
-            div.btn-icon 👨‍🎓
-            h5 Clientes
-            p.small.text-muted Visualizar e gerir os clientes
+    div.d-flex.flex-wrap.justify-content-center
+      a(href="/clientes" style="text-decoration: none").text-dark
+        div.btn-card
+          div.btn-icon
+            i.bi.bi-people-fill
+          h5.card-title Clientes
+          p.small.text-muted Visualizar e gerir os clientes
 
-        a(href="/ptrainers" style="text-decoration: none").text-dark
-          div.btn-card
-            div.btn-icon 🧑‍🏫
-            h5 Personal Trainers
-            p.small.text-muted Clientes com personal trainers
+      a(href="/funcionarios" style="text-decoration: none").text-dark
+        div.btn-card
+          div.btn-icon
+            i.bi.bi-person-badge
+          h5.card-title Funcionários
+          p.small.text-muted Gerir os funcionários do ginásio
 
-        a(href="/subscricoes" style="text-decoration: none").text-dark
-          div.btn-card
-            div.btn-icon 🧑‍🏫
-            h5 Subscrições
-            p.small.text-muted Visualizar e gerir os tipos de subscrições
+      a(href="/ptrainers" style="text-decoration: none").text-dark
+        div.btn-card
+          div.btn-icon
+            i.bi.bi-activity
+          h5.card-title Personal Trainers
+          p.small.text-muted Clientes com personal trainers
 
-    script(src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js")
+      a(href="/subscricoes" style="text-decoration: none").text-dark
+        div.btn-card
+          div.btn-icon
+            i.bi.bi-card-checklist
+          h5.card-title Subscrições
+          p.small.text-muted Visualizar e gerir os tipos de subscrições
+
+block scripts
+  script(src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js")

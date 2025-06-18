@@ -1,258 +1,251 @@
-html
-  head
-    title= title
-    link(href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet")
-    link(href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet")
-    style.
-      body {
-        padding: 20px;
-        background-color: #f8f9fa;
-      }
-      .table-container {
-        background: white;
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        margin-bottom: 20px;
-      }
-      h1 {
-        margin-bottom: 20px;
-        color: #343a40;
-      }
-      .action-buttons {
-        white-space: nowrap;
-      }
-      .btn-sm {
-        padding: 0.25rem 0.5rem;
-        font-size: 0.875rem;
-      }
+extends layouts/fe_master
 
-  body
-    div.container
-      h1.display-4= title
+block content
+  style.
+    .table-container {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+    .action-buttons {
+      white-space: nowrap;
+    }
+    .btn-sm {
+      padding: 0.25rem 0.5rem;
+      font-size: 0.875rem;
+    }
+    .badge {
+      font-size: 0.85em;
+      padding: 0.35em 0.65em;
+    }
 
-      div.table-container
-        div.d-flex.justify-content-between.mb-3
-          a.btn.btn-primary(href="/") 
-            i.bi.bi-arrow-left
-            |  Voltar à Página Inicial
-          button.btn.btn-success(type="button" data-bs-toggle="modal" data-bs-target="#createModal")
-            i.bi.bi-plus-lg
-            |  Adicionar Cliente
+  h1.display-4.mb-4= title
 
-        table.table.table-striped.table-hover
-          thead.table-dark
-            tr
-              th ID
-              th Nome
-              th Idade
-              th Email
-              th Telefone
-              th Tipo de subscrição
-              th Ações
-          tbody
-            each cliente in clientes
-              tr
-                td= cliente.id
-                td= cliente.nome
-                td= cliente.idade
-                td= cliente.email
-                td= cliente.telefone
-                td
-                  if cliente.subscription_tier_id === 1
-                    span.badge.rounded-pill.text-bg-secondary Basic
-                  else if cliente.subscription_tier_id === 2
-                    span.badge.rounded-pill.text-bg-primary Premium
-                  else if cliente.subscription_tier_id === 3
-                    span.badge.rounded-pill.text-bg-success VIP
-                  else
-                    span.badge.rounded-pill.text-bg-warning Desconhecido
-                td.action-buttons
-                  button.btn.btn-sm.btn-warning.me-1(type="button" data-bs-toggle="modal" data-bs-target=`#editModal${cliente.id}`)
-                    i.bi.bi-pencil
-                  button.btn.btn-sm.btn-danger(type="button" data-bs-toggle="modal" data-bs-target=`#deleteModal${cliente.id}`)
-                    i.bi.bi-trash
+  div.table-container
+    div.d-flex.justify-content-between.mb-3
+      a.btn.btn-primary(href="/") 
+        i.bi.bi-arrow-left
+        |  Voltar à Página Inicial
+      button.btn.btn-success(type="button" data-bs-toggle="modal" data-bs-target="#createModal")
+        i.bi.bi-plus-lg
+        |  Adicionar Cliente
 
-    // Create Client Modal
-    div.modal.fade(id="createModal" tabindex="-1" aria-hidden="true")
+    table.table.table-striped.table-hover
+      thead.table-dark
+        tr
+          th ID
+          th Nome
+          th Idade
+          th Email
+          th Telefone
+          th Tipo de subscrição
+          th Ações
+      tbody
+        each cliente in clientes
+          tr
+            td= cliente.id
+            td= cliente.nome
+            td= cliente.idade
+            td= cliente.email
+            td= cliente.telefone
+            td
+              if cliente.subscription_tier_id === 1
+                span.badge.rounded-pill.text-bg-secondary Basic
+              else if cliente.subscription_tier_id === 2
+                span.badge.rounded-pill.text-bg-primary Premium
+              else if cliente.subscription_tier_id === 3
+                span.badge.rounded-pill.text-bg-success VIP
+              else
+                span.badge.rounded-pill.text-bg-warning Desconhecido
+            td.action-buttons
+              button.btn.btn-sm.btn-warning.me-1(type="button" data-bs-toggle="modal" data-bs-target=`#editModal${cliente.id}`)
+                i.bi.bi-pencil
+              button.btn.btn-sm.btn-danger(type="button" data-bs-toggle="modal" data-bs-target=`#deleteModal${cliente.id}`)
+                i.bi.bi-trash
+
+  // Create Client Modal
+  div.modal.fade(id="createModal" tabindex="-1" aria-hidden="true")
+    div.modal-dialog
+      div.modal-content
+        div.modal-header
+          h5.modal-title Adicionar Novo Cliente
+          button.btn-close(type="button" data-bs-dismiss="modal" aria-label="Close")
+        div.modal-body
+          form#createForm
+            div.mb-3
+              label.form-label(for="nome") Nome
+              input.form-control(type="text" id="nome" name="nome" required)
+            div.mb-3
+              label.form-label(for="idade") Idade
+              input.form-control(type="number" id="idade" name="idade")
+            div.mb-3
+              label.form-label(for="email") Email
+              input.form-control(type="email" id="email" name="email" required)
+            div.mb-3
+              label.form-label(for="telefone") Telefone
+              input.form-control(type="text" id="telefone" name="telefone")
+            div.mb-3
+              label.form-label(for="subscription_tier_id") Tipo de Subscrição
+              select.form-select(id="subscription_tier_id" name="subscription_tier_id" required)
+                option(value="1") Basic
+                option(value="2") Premium
+                option(value="3") VIP
+        div.modal-footer
+          button.btn.btn-secondary(type="button" data-bs-dismiss="modal") Cancelar
+          button.btn.btn-primary(type="submit" form="createForm") Guardar
+
+  // Edit and Delete Modals for each client
+  each cliente in clientes
+    // Edit Modal
+    div.modal.fade(id=`editModal${cliente.id}` tabindex="-1" aria-hidden="true")
       div.modal-dialog
         div.modal-content
           div.modal-header
-            h5.modal-title Adicionar Novo Cliente
+            h5.modal-title Editar Cliente #{cliente.nome}
             button.btn-close(type="button" data-bs-dismiss="modal" aria-label="Close")
           div.modal-body
-            form#createForm
+            form(id=`editForm${cliente.id}` action=`/clientes/${cliente.id}` method="POST")
+              input(type="hidden" name="_method" value="PUT")
               div.mb-3
-                label.form-label(for="nome") Nome
-                input.form-control(type="text" id="nome" name="nome" required)
+                label.form-label(for=`editNome${cliente.id}`) Nome
+                input.form-control(type="text" id=`editNome${cliente.id}` name="nome" value=cliente.nome required)
               div.mb-3
-                label.form-label(for="idade") Idade
-                input.form-control(type="number" id="idade" name="idade")
+                label.form-label(for=`editIdade${cliente.id}`) Idade
+                input.form-control(type="number" id=`editIdade${cliente.id}` name="idade" value=cliente.idade)
               div.mb-3
-                label.form-label(for="email") Email
-                input.form-control(type="email" id="email" name="email" required)
+                label.form-label(for=`editEmail${cliente.id}`) Email
+                input.form-control(type="email" id=`editEmail${cliente.id}` name="email" value=cliente.email required)
               div.mb-3
-                label.form-label(for="telefone") Telefone
-                input.form-control(type="text" id="telefone" name="telefone")
+                label.form-label(for=`editTelefone${cliente.id}`) Telefone
+                input.form-control(type="text" id=`editTelefone${cliente.id}` name="telefone" value=cliente.telefone)
               div.mb-3
-                label.form-label(for="subscription_tier_id") Tipo de Subscrição
-                select.form-select(id="subscription_tier_id" name="subscription_tier_id" required)
-                  option(value="1") Basic
-                  option(value="2") Premium
-                  option(value="3") VIP
+                label.form-label(for=`editSubscription${cliente.id}`) Tipo de Subscrição
+                select.form-select(id=`editSubscription${cliente.id}` name="subscription_tier_id" required)
+                  option(value="1" selected=cliente.subscription_tier_id === 1) Basic
+                  option(value="2" selected=cliente.subscription_tier_id === 2) Premium
+                  option(value="3" selected=cliente.subscription_tier_id === 3) VIP
           div.modal-footer
             button.btn.btn-secondary(type="button" data-bs-dismiss="modal") Cancelar
-            button.btn.btn-primary(type="submit" form="createForm") Guardar
+            button.btn.btn-primary(type="submit" form=`editForm${cliente.id}`) Atualizar
 
-    // Edit and Delete Modals for each client
-    each cliente in clientes
-      // Edit Modal
-      div.modal.fade(id=`editModal${cliente.id}` tabindex="-1" aria-hidden="true")
-        div.modal-dialog
-          div.modal-content
-            div.modal-header
-              h5.modal-title Editar Cliente #{cliente.nome}
-              button.btn-close(type="button" data-bs-dismiss="modal" aria-label="Close")
-            div.modal-body
-              form(id=`editForm${cliente.id}` action=`/clientes/${cliente.id}` method="POST")
-                input(type="hidden" name="_method" value="PUT")
-                div.mb-3
-                  label.form-label(for=`editNome${cliente.id}`) Nome
-                  input.form-control(type="text" id=`editNome${cliente.id}` name="nome" value=cliente.nome required)
-                div.mb-3
-                  label.form-label(for=`editIdade${cliente.id}`) Idade
-                  input.form-control(type="number" id=`editIdade${cliente.id}` name="idade" value=cliente.idade)
-                div.mb-3
-                  label.form-label(for=`editEmail${cliente.id}`) Email
-                  input.form-control(type="email" id=`editEmail${cliente.id}` name="email" value=cliente.email required)
-                div.mb-3
-                  label.form-label(for=`editTelefone${cliente.id}`) Telefone
-                  input.form-control(type="text" id=`editTelefone${cliente.id}` name="telefone" value=cliente.telefone)
-                div.mb-3
-                  label.form-label(for=`editSubscription${cliente.id}`) Tipo de Subscrição
-                  select.form-select(id=`editSubscription${cliente.id}` name="subscription_tier_id" required)
-                    option(value="1" selected=cliente.subscription_tier_id === 1) Basic
-                    option(value="2" selected=cliente.subscription_tier_id === 2) Premium
-                    option(value="3" selected=cliente.subscription_tier_id === 3) VIP
-            div.modal-footer
-              button.btn.btn-secondary(type="button" data-bs-dismiss="modal") Cancelar
-              button.btn.btn-primary(type="submit" form=`editForm${cliente.id}`) Atualizar
+    // Delete Modal
+    div.modal.fade(id=`deleteModal${cliente.id}` tabindex="-1" aria-hidden="true")
+      div.modal-dialog
+        div.modal-content
+          div.modal-header
+            h5.modal-title Confirmar Eliminação
+            button.btn-close(type="button" data-bs-dismiss="modal" aria-label="Close")
+          div.modal-body
+            p Tem a certeza que deseja eliminar o cliente #{cliente.nome}?
+            form(id=`deleteForm${cliente.id}` action=`/clientes/${cliente.id}` method="POST")
+              input(type="hidden" name="_method" value="DELETE")
+          div.modal-footer
+            button.btn.btn-secondary(type="button" data-bs-dismiss="modal") Cancelar
+            button.btn.btn-danger(type="submit" form=`deleteForm${cliente.id}`) Eliminar
 
-      // Delete Modal
-      div.modal.fade(id=`deleteModal${cliente.id}` tabindex="-1" aria-hidden="true")
-        div.modal-dialog
-          div.modal-content
-            div.modal-header
-              h5.modal-title Confirmar Eliminação
-              button.btn-close(type="button" data-bs-dismiss="modal" aria-label="Close")
-            div.modal-body
-              p Tem a certeza que deseja eliminar o cliente #{cliente.nome}?
-              form(id=`deleteForm${cliente.id}` action=`/clientes/${cliente.id}` method="POST")
-                input(type="hidden" name="_method" value="DELETE")
-            div.modal-footer
-              button.btn.btn-secondary(type="button" data-bs-dismiss="modal") Cancelar
-              button.btn.btn-danger(type="submit" form=`deleteForm${cliente.id}`) Eliminar
+block scripts
+  script(src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js")
+  script.
+    document.addEventListener('DOMContentLoaded', function() {
+      // Handle create form submission
+      const createForm = document.getElementById('createForm');
+      if (createForm) {
+        createForm.addEventListener('submit', function(e) {
+          e.preventDefault();
+          const formData = {
+            nome: document.getElementById('nome').value,
+            idade: document.getElementById('idade').value,
+            email: document.getElementById('email').value,
+            telefone: document.getElementById('telefone').value,
+            subscription_tier_id: document.getElementById('subscription_tier_id').value
+          };
 
-    script(src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js")
-script.
-  document.addEventListener('DOMContentLoaded', function() {
+          fetch('/clientes', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+          })
+          .then(response => {
+            if (response.ok) {
+              // Close modal and refresh page
+              bootstrap.Modal.getInstance(document.getElementById('createModal')).hide();
+              location.reload();
+            } else {
+              throw new Error('Create failed');
+            }
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to create client');
+          });
+        });
+      }
 
-    // Handle create form submission
-    const createForm = document.getElementById('createForm');
-    if (createForm) {
-      createForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        const formData = {
-          nome: document.getElementById('nome').value,
-          idade: document.getElementById('idade').value,
-          email: document.getElementById('email').value,
-          telefone: document.getElementById('telefone').value,
-          subscription_tier_id: document.getElementById('subscription_tier_id').value
-        };
+      // Handle edit forms
+      document.querySelectorAll('[id^="editForm"]').forEach(form => {
+        form.addEventListener('submit', function(e) {
+          e.preventDefault();
+          const url = form.action;
+          const formData = {
+            nome: form.querySelector('[name="nome"]').value,
+            idade: form.querySelector('[name="idade"]').value,
+            email: form.querySelector('[name="email"]').value,
+            telefone: form.querySelector('[name="telefone"]').value,
+            subscription_tier_id: form.querySelector('[name="subscription_tier_id"]').value
+          };
 
-        fetch('/clientes', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(formData)
-        })
-        .then(response => {
-          if (response.ok) {
-            // Close modal and refresh page
-            bootstrap.Modal.getInstance(document.getElementById('createModal')).hide();
-            location.reload();
-          } else {
-            throw new Error('Create failed');
-          }
-        })
-        .catch(error => {
-          console.error('Error:', error);
-          alert('Failed to create client');
+          fetch(url, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+          })
+          .then(response => {
+            if (response.ok) {
+              const modalId = form.closest('.modal').id;
+              bootstrap.Modal.getInstance(document.getElementById(modalId)).hide();
+              location.reload();
+            } else {
+              throw new Error('Update failed');
+            }
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to update client');
+          });
         });
       });
-    }
-    // Handle edit forms
-    document.querySelectorAll('[id^="editForm"]').forEach(form => {
-      form.addEventListener('submit', function(e) {
-        e.preventDefault();
-        const url = form.action;
-        const formData = {
-          nome: form.querySelector('[name="nome"]').value,
-          idade: form.querySelector('[name="idade"]').value,
-          email: form.querySelector('[name="email"]').value,
-          telefone: form.querySelector('[name="telefone"]').value,
-          subscription_tier_id: form.querySelector('[name="subscription_tier_id"]').value
-        };
 
-        fetch(url, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(formData)
-        })
-        .then(response => {
-          if (response.ok) {
-            const modalId = form.closest('.modal').id;
-            bootstrap.Modal.getInstance(document.getElementById(modalId)).hide();
-            location.reload();
-          } else {
-            throw new Error('Update failed');
-          }
-        })
-        .catch(error => {
-          console.error('Error:', error);
-          alert('Failed to update client');
+      // Handle delete forms
+      document.querySelectorAll('[id^="deleteForm"]').forEach(form => {
+        form.addEventListener('submit', function(e) {
+          e.preventDefault();
+          const url = form.action;
+
+          fetch(url, {
+            method: 'DELETE',
+            headers: {
+              'Content-Type': 'application/json',
+            }
+          })
+          .then(response => {
+            if (response.ok) {
+              const modalId = form.closest('.modal').id;
+              bootstrap.Modal.getInstance(document.getElementById(modalId)).hide();
+              location.reload();
+            } else {
+              throw new Error('Delete failed');
+            }
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to delete client');
+          });
         });
       });
     });
-
-    // Handle delete forms
-    document.querySelectorAll('[id^="deleteForm"]').forEach(form => {
-      form.addEventListener('submit', function(e) {
-        e.preventDefault();
-        const url = form.action;
-
-        fetch(url, {
-          method: 'DELETE',
-          headers: {
-            'Content-Type': 'application/json',
-          }
-        })
-        .then(response => {
-          if (response.ok) {
-            const modalId = form.closest('.modal').id;
-            bootstrap.Modal.getInstance(document.getElementById(modalId)).hide();
-            location.reload();
-          } else {
-            throw new Error('Delete failed');
-          }
-        })
-        .catch(error => {
-          console.error('Error:', error);
-          alert('Failed to delete client');
-        });
-      });
-    });
-  });
