@@ -1,9 +1,10 @@
 // Sistema de Gestão Ginásio - Backend
 
+require('dotenv').config();
 const express = require('express');
 const mysql = require('mysql2');
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 const db = require('./connection.js'); //This is the same as making a new connection
 const bodyParser = require('body-parser');
 
